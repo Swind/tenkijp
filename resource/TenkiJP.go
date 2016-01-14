@@ -1,9 +1,11 @@
 package resource
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -40,8 +42,8 @@ func (city *City) Id() int {
 }
 
 type Area struct {
-	Name  string `json:"name"`
-	Towns []Town `json:"towns"`
+	Name string `json:"name"`
+	//Towns []Town `json:"towns"`
 	Address
 }
 
@@ -50,7 +52,7 @@ func (area *Area) DressUrl() string {
 }
 
 func (area *Area) ReadDressHTML() (*goquery.Document, error) {
-	return goquery.NewDocument(area.DressUrl())
+	return goquery.NewDocument(DOMAIN + area.DressUrl())
 }
 
 func (area *Area) Id() int {
@@ -78,9 +80,45 @@ func (town *Town) Id() int {
 }
 
 type DressIndex struct {
-	Date      time.Time `json:"date"`
-	ToIndex   int       `json:"today_index"`
-	ToAdvice  string    `json:"today_advice"`
-	TmrIndex  int       `json:"tomorrow_index"`
-	TmrAdvice string    `json:"tomorrow_advice"`
+	ToIndex  int    `json:"today_index"`
+	ToAdvice string `json:"today_advice"`
+
+	TmrIndex  int    `json:"tomorrow_index"`
+	TmrAdvice string `json:"tomorrow_advice"`
+}
+
+type Temperature struct {
+	ToHighTemp int `json:"today_high_temperature"`
+	ToLowTemp  int `json:"today_low_temperature"`
+
+	TmrHighTemp int `json:"tomorrow_high_temperature"`
+	TmrLowTemp  int `json:"tomorrow_low_temperature"`
+}
+
+func Load(path string) (Country, error) {
+	country := Country{}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println("With error:", err, "when read ", path)
+		return country, err
+	}
+
+	err = json.Unmarshal(b, &country)
+	if err != nil {
+		fmt.Println("With error:", err, "when unmarshal JSON")
+		return country, err
+	}
+
+	return country, nil
+}
+
+func Save(country Country, path string) error {
+	b, err := json.Marshal(country)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, b, 677)
+	return err
 }

@@ -1,9 +1,8 @@
-package main
+package parser
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"strconv"
 	"swind/tenkijp/resource"
 
 	"github.com/PuerkitoBio/goquery"
@@ -49,7 +48,7 @@ func get_areas_and_towns(city resource.City) []resource.Area {
 				town := resource.Town{}
 				town.Name = town_selector.Text()
 				town.Url, _ = town_selector.Attr("href")
-				area.Towns = append(area.Towns, town)
+				//area.Towns = append(area.Towns, town)
 			})
 
 			results = append(results, area)
@@ -84,8 +83,29 @@ func GetCountry() resource.Country {
 	return country
 }
 
-func main() {
-	country := GetCountry()
-	b, _ := json.Marshal(country)
-	ioutil.WriteFile("./urls.json", b, 0644)
+func GetAreaDressIndex(area resource.Area) resource.DressIndex {
+	doc, _ := area.ReadDressHTML()
+
+	index := resource.DressIndex{}
+	index.ToIndex, _ = strconv.Atoi(doc.Find("dl#exponentLargeLeft>dd>dl>dd").First().Text())
+	index.ToAdvice = doc.Find("dl#exponentLargeLeft>dd>p").Last().Text()
+
+	index.TmrIndex, _ = strconv.Atoi(doc.Find("dl#exponentLargeRight>dd>dl>dd").First().Text())
+	index.TmrAdvice = doc.Find("dl#exponentLargeRight>dd>p").Last().Text()
+
+	return index
+}
+
+func GetAreaTemperature(area resource.Area) resource.Temperature {
+	doc, _ := area.ReadHTML()
+
+	temp := resource.Temperature{}
+
+	temp.ToHighTemp, _ = strconv.Atoi(doc.Find("div#townLeftOneBox tr.highTemp td.temp span.bold").First().Text())
+	temp.ToLowTemp, _ = strconv.Atoi(doc.Find("div#townLeftOneBox tr.lowTemp td.temp span.bold").First().Text())
+
+	temp.TmrHighTemp, _ = strconv.Atoi(doc.Find("div#townRightOneBox tr.highTemp td.temp span.bold").First().Text())
+	temp.TmrLowTemp, _ = strconv.Atoi(doc.Find("div#townRightOneBox tr.lowTemp td.temp span.bold").First().Text())
+
+	return temp
 }
