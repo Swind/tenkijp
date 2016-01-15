@@ -1,4 +1,4 @@
-package resource
+package tenkijp
 
 import (
 	"encoding/json"
@@ -6,11 +6,25 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 const DOMAIN = "http://www.tenki.jp"
+
+type AreaData struct {
+	Date        time.Time   `json:"date"`
+	Area        Area        `json:"area"`
+	Index       DressIndex  `json:"index"`
+	Temperature Temperature `json:"temperature"`
+}
+
+/* ==========================================
+ *
+ * Address
+ *
+ * ===========================================*/
 
 type Address struct {
 	Url string `json:"url"`
@@ -20,12 +34,26 @@ func (address *Address) ReadHTML() (*goquery.Document, error) {
 	return goquery.NewDocument(DOMAIN + address.Url)
 }
 
+func (address *Address) GetFullPath() string {
+	return DOMAIN + address.Url
+}
+
+/* ==========================================
+ *
+ * Country
+ *
+ * ===========================================*/
 type Country struct {
 	Name   string `json:"name"`
 	Cities []City `json:"cities"`
 	Address
 }
 
+/* ==========================================
+ *
+ *  City
+ *
+ * ===========================================*/
 type City struct {
 	Name  string `json:"name"`
 	Areas []Area `json:"areas"`
@@ -41,6 +69,11 @@ func (city *City) Id() int {
 	return id1*100 + id2
 }
 
+/* ==========================================
+ *
+ *  Area
+ *
+ * ===========================================*/
 type Area struct {
 	Name string `json:"name"`
 	//Towns []Town `json:"towns"`
@@ -55,6 +88,10 @@ func (area *Area) ReadDressHTML() (*goquery.Document, error) {
 	return goquery.NewDocument(DOMAIN + area.DressUrl())
 }
 
+func (area *Area) GetFullDressPath() string {
+	return DOMAIN + area.DressUrl()
+}
+
 func (area *Area) Id() int {
 	s := strings.Split(area.Url, "/")
 
@@ -64,6 +101,11 @@ func (area *Area) Id() int {
 	return id
 }
 
+/* ==========================================
+ *
+ *  Town
+ *
+ * ===========================================*/
 type Town struct {
 	Name string `json:"name"`
 	Address
@@ -79,6 +121,11 @@ func (town *Town) Id() int {
 	return id
 }
 
+/* ==========================================
+ *
+ *  TenkiJP data
+ *
+ * ===========================================*/
 type DressIndex struct {
 	ToIndex  int    `json:"today_index"`
 	ToAdvice string `json:"today_advice"`
@@ -95,6 +142,11 @@ type Temperature struct {
 	TmrLowTemp  int `json:"tomorrow_low_temperature"`
 }
 
+/* ==========================================
+ *
+ *  Country load and save
+ *
+ * ===========================================*/
 func Load(path string) (Country, error) {
 	country := Country{}
 
