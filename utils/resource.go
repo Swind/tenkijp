@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -165,12 +166,12 @@ func Load(path string) (Country, error) {
 	return country, nil
 }
 
-func Save(country Country, path string) error {
-	b, err := json.Marshal(country)
+func Save(item interface{}, path string) error {
+	b, err := json.Marshal(item)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, b, 677)
+	err = ioutil.WriteFile(path, b, os.ModePerm)
 	return err
 }

@@ -1,0 +1,19 @@
+{
+	"ImportPath": "swind/tenkijp",
+	"GoVersion": "go1.5",
+	"Deps": [
+		{
+			"ImportPath": "github.com/PuerkitoBio/goquery",
+			"Comment": "v0.3.2-80-g417cce8",
+			"Rev": "417cce822c7b9a379df5824be95228d177c5698b"
+		},
+		{
+			"ImportPath": "github.com/andybalholm/cascadia",
+			"Rev": "3ad29d1ad1c4f2023e355603324348cf1f4b2d48"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "5d0a0f8cd486626821d2ba44d471ab1c9271d38f"
+		}
+	]
+}

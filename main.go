@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	. "swind/tenkijp/utils"
 	"time"
 )
@@ -44,5 +43,9 @@ func GetTodayData() []AreaData {
 
 func main() {
 	data_list := GetTodayData()
-	fmt.Println(data_list)
+
+	day := time.Now()
+	const layout = "2006-01-02"
+
+	Save(data_list, "./"+day.Format(layout)+".json")
 }
