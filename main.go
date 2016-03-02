@@ -1,51 +1,36 @@
 package main
 
 import (
-	. "swind/tenkijp/utils"
+	"encoding/json"
+	"net/http"
+	"swind/tenkijp/mydrive"
+	"swind/tenkijp/tenkijp"
 	"time"
 )
 
-func Task(c chan AreaData, area Area) {
-	dress_doc, _ := area.ReadDressHTML()
-	index := GetAreaDressIndex(area, dress_doc)
+func ParseTenkiJPData() {
+	parser := tenkijp.TenkiJP{Client: &http.Client{}}
 
-	temp_doc, _ := area.ReadHTML()
-	temp := GetAreaTemperature(area, temp_doc)
-
-	data := AreaData{time.Now(), area, index, temp}
-
-	c <- data
-}
-
-func GetTodayData() []AreaData {
-	// Load all urls
-	country, _ := Load("./country.json")
-	data_list := []AreaData{}
-
-	c := make(chan AreaData)
-
-	// Parse area data and save to datastore
-	area_count := 0
-	for _, city := range country.Cities {
-		for _, area := range city.Areas {
-			go Task(c, area)
-			area_count++
-		}
-	}
-
-	// Wait all task finished
-	for i := 0; i < area_count; i++ {
-		data_list = append(data_list, <-c)
-	}
-
-	return data_list
-}
-
-func main() {
-	data_list := GetTodayData()
+	data_list := parser.GetTodayData()
 
 	day := time.Now()
 	const layout = "2006-01-02"
+	SaveToGoogleDrive(data_list, day.Format(layout)+".json")
+}
 
-	Save(data_list, "./"+day.Format(layout)+".json")
+func SaveToGoogleDrive(item interface{}, filename string) error {
+	parents := []string{"0B0pY6eBbGeRad01xUkZ5VzR4cGM"}
+
+	b, err := json.Marshal(item)
+	if err != nil {
+		return err
+	}
+
+	svr, err := mydrive.GetMyService()
+	mydrive.UploadWithParents(svr, parents, filename, string(b))
+	return err
+}
+
+func main() {
+	ParseTenkiJPData()
 }
